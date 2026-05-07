@@ -67,7 +67,11 @@ Check out the [contribution guidelines](/docs/contrib/) to learn how to get invo
 <div class="text-center">We are a <a href="https://www.cncf.io">Cloud Native Computing Foundation</a> sandbox project.</div>
 
 <p>
-  <div class="text-center">The Linux Foundation® (TLF) has registered trademarks and uses trademarks. For a list of TLF trademarks, see <a href="https://www.linuxfoundation.org/trademark-usage">Trademark Usage</a></div>
+  <div class="text-center">
+  Copyright SpinKube a Series of LF Projects, LLC
+  <br>
+  For website terms of use, trademark policy and other project policies please see
+  <a href="https://lfprojects.org/policies/">https://lfprojects.org/policies/</a>.</div>
 </p>
 
 {{% /blocks/section %}}
