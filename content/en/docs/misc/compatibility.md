@@ -16,6 +16,7 @@ Operator](https://github.com/spinframework/spin-operator/):
  - [Digital Ocean Kubernetes (DOKS)](https://www.digitalocean.com/products/kubernetes)
  - [Google Kubernetes Engine (GKE)](https://cloud.google.com/kubernetes-engine)
  - [k3d](https://k3d.io)
+ - [kind](https://kind.sigs.k8s.io/)
  - [minikube](https://minikube.sigs.k8s.io/docs/) (explicitly pass `--container-runtime=containerd`
    and ensure you're on minikube version `>= 1.33`)
  - [Scaleway Kubernetes Kapsule](https://www.scaleway.com/en/kubernetes-kapsule/)

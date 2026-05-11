@@ -115,12 +115,11 @@ FATA[0000] Failed to create cluster 'wasm-cluster' because a cluster with that n
 
 ### Cluster Information
 
-With `k3d` installed, you can use the following command to get a cluster list:
+With `kind` installed, you can use the following command to get a cluster list:
 
 ```console
-$ k3d cluster list
-NAME           SERVERS   AGENTS   LOADBALANCER
-wasm-cluster   1/1       2/2      true
+$ kind get clusters
+wasm-cluster
 ```
 
 With `kubectl installed, you can use the following command to dump cluster information (this is much
@@ -132,16 +131,10 @@ kubectl cluster-info dump
 
 ### Cluster Delete
 
-With `k3d` installed, you can delete the cluster by name, as shown in the command below:
+With `kind` installed, you can delete the cluster by name, as shown in the command below:
 
-```console
-$ k3d cluster delete wasm-cluster
-INFO[0000] Deleting cluster 'wasm-cluster'
-INFO[0002] Deleting cluster network 'k3d-wasm-cluster'
-INFO[0002] Deleting 1 attached volumes...
-INFO[0002] Removing cluster details from default kubeconfig...
-INFO[0002] Removing standalone kubeconfig file (if there is one)...
-INFO[0002] Successfully deleted cluster wasm-cluster!
+```sh
+kind delete cluster --name wasm-cluster
 ```
 
 ## Too long: must have at most 262144 bytes

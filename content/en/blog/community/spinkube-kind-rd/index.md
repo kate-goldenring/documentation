@@ -12,7 +12,7 @@ resources:
 
 The goal of this guide is show a way to bring [SpinKube](https://www.spinkube.dev/) to
 [KinD](https://kind.sigs.k8s.io/) without the need of a custom image, like the [SpinKube on
-k3d](https://www.spinkube.dev/docs/spin-operator/quickstart/) example.
+KinD](https://www.spinkube.dev/docs/spin-operator/quickstart/) example.
 
 Instead, the Rancher Desktop (RD) Spin plugin will be used alongside KinD cluster configuration.
 
