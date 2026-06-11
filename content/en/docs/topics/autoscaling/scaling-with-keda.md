@@ -20,25 +20,39 @@ Please ensure the following tools are installed on your local machine:
 
 - [kubectl](https://kubernetes.io/docs/tasks/tools/) - the Kubernetes CLI
 - [Helm](https://helm.sh) - the package manager for Kubernetes
-- [Docker](https://docs.docker.com/engine/install/) - for running k3d
-- [k3d](https://k3d.io) - a lightweight Kubernetes distribution that runs on Docker
+- [Docker](https://docs.docker.com/engine/install/) - for running kind
+- [kind](https://kind.sigs.k8s.io/) - a development Kubernetes distribution that runs on Docker
 - [Bombardier](https://pkg.go.dev/github.com/codesenberg/bombardier) - cross-platform HTTP
   benchmarking CLI
 
-> We use k3d to run a Kubernetes cluster locally as part of this tutorial, but you can follow these
+> We use kind to run a Kubernetes cluster locally as part of this tutorial, but you can follow these
 > steps to configure KEDA autoscaling on your desired Kubernetes environment.
 
 ## Setting Up Kubernetes Cluster
 
 Run the following command to create a Kubernetes cluster that has [the
 containerd-shim-spin](https://github.com/spinframework/containerd-shim-spin) pre-requisites installed: If
-you have a Kubernetes cluster already, please feel free to use it:
+you have a Kubernetes cluster already, or want to start with a more production ready SpinKube installation, follow the [Helm installation guide](../../install/installing-with-helm.md) instead, which include instructions for configuring the Runtime Class Manager for managing the lifecycle of the Spin containerd shim. The following `kind` cluster creation creates a three node cluster with containerd configuration to instruct containerd to use the Spin containerd shim for workloads scheduled with the `spin` runtime class. We are also exposing host port 8081 to make load testing easier in later steps.
 
 ```console
-k3d cluster create wasm-cluster-scale \
-  --image ghcr.io/spinframework/containerd-shim-spin/k3d:v0.24.0 \
-  -p "8081:80@loadbalancer" \
-  --agents 2
+cat <<EOF | kind create cluster --name wasm-cluster-scale --image ghcr.io/spinframework/containerd-shim-spin/kind:v0.25.0 --config=-
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+containerdConfigPatches:
+- |-
+  [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.spin]
+    runtime_type = "io.containerd.spin.v2"
+  [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.spin.options]
+    SystemdCgroup = true
+nodes:
+- role: control-plane
+  extraPortMappings:
+  - containerPort: 80
+    hostPort: 8081
+    protocol: TCP
+- role: worker
+- role: worker
+EOF
 ```
 
 ### Deploying Spin Operator and its dependencies
@@ -69,7 +83,7 @@ Next, run the following commands to install the Spin [Runtime Class]({{<ref
 "glossary#custom-resource-definition-crd">}}):
 
 > Note: In a production cluster you likely want to customize the Runtime Class with a `nodeSelector`
-> that matches nodes that have the shim installed. However, in the K3d example, they're installed on
+> that matches nodes that have the shim installed. However, in the kind example, they're installed on
 > every node.
 
 ```console
@@ -99,13 +113,31 @@ kubectl apply -f https://github.com/spinframework/spin-operator/releases/downloa
 Great, now you have Spin Operator up and running on your cluster. This means you’re set to create
 and deploy SpinApps later on in the tutorial.
 
-## Set Up Ingress
+## Install an Ingress Controller
+
+Install an ingress controller in your cluster. This example uses Traefik as the ingress controller for local routing in Kind. We are requiring that it is run on the control-plane node where the hostPort is exposed.
+
+```sh
+helm repo add traefik https://helm.traefik.io/traefik
+helm repo update
+helm install traefik traefik/traefik \
+  --namespace traefik --create-namespace \
+  --set deployment.kind=DaemonSet \
+  --set service.type=ClusterIP \
+  --set ports.web.hostPort=80 \
+  --set tolerations[0].key=node-role.kubernetes.io/control-plane \
+  --set tolerations[0].effect=NoSchedule \
+  --set tolerations[0].operator=Exists \
+  --set nodeSelector."kubernetes\.io/hostname"=wasm-cluster-scale-control-plane
+kubectl wait --namespace traefik --for=condition=ready pod --selector=app.kubernetes.io/name=traefik --timeout=180s
+```
+
+## Set Up Ingress for the Spin App
 
 Use the following command to set up ingress on your Kubernetes cluster. This ensures traffic can
 reach your Spin App once we’ve created it in future steps:
 
 ```console
-# Setup ingress following this tutorial https://k3d.io/v5.4.6/usage/exposing_services/
 cat <<EOF | kubectl apply -f -
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -114,6 +146,7 @@ metadata:
   annotations:
     ingress.kubernetes.io/ssl-redirect: "false"
 spec:
+  ingressClassName: traefik
   rules:
   - http:
       paths:
@@ -126,8 +159,6 @@ spec:
               number: 80
 EOF
 ```
-
-Hit enter to create the ingress resource.
 
 ## Setting Up KEDA
 
