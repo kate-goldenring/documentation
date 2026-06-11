@@ -17,7 +17,7 @@ For this Quickstart guide, you will need:
 - [kubectl](https://kubernetes.io/docs/tasks/tools/) - the Kubernetes CLI
 - A container runtime, such as [Docker
   Desktop](https://docs.docker.com/get-docker/), [Rancher Desktop](https://rancherdesktop.io/) or [OrbStack](https://orbstack.dev/)
-- [kind](https://kind.sigs.k8s.io/docs/user/quick-start/) - a a tool for running local development Kubernetes clusters using Docker container “nodes”.
+- [kind](https://kind.sigs.k8s.io/docs/user/quick-start/) - a tool for running local development Kubernetes clusters using Docker container “nodes”.
 - [Helm](https://helm.sh/docs/intro/install/) - the package manager for Kubernetes
 
 ### Set up Your Kubernetes Cluster
